@@ -11,7 +11,7 @@ const FeatureMap = ({
   internal?: boolean;
   spectrogram?: boolean;
 }) => {
-  if (!data || !data.length || !data[0]?.length) return null;
+  if (!data?.length || !data[0]?.length) return null;
 
   const mapHeight = data.length;
   const mapWidth = data[0].length;
