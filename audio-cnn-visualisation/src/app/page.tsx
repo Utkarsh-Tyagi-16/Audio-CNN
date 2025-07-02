@@ -102,7 +102,7 @@ function splitLayers(visualization: VisualizationData) {
       const [parent] = name.split(".");
       if (parent === undefined) continue;
 
-      if (!internals[parent]) internals[parent] = [];
+      internals[parent] ??= [];
       internals[parent].push([name, data]);
     }
   }
@@ -178,7 +178,7 @@ export default function HomePage() {
             CNN Audio Visualizer
           </h1>
           <p className="text-md mb-8 text-stone-600">
-            Upload a WAV file to see the model's predictions and feauture maps
+            Upload a WAV file to see the model&apos;s predictions and feauture maps
           </p>
 
           <div className="flex flex-col items-center">
