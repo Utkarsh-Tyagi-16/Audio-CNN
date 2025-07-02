@@ -3,42 +3,86 @@
 ![Audio CNN 1](audio-cnn-1.png)
 ![Audio CNN 2](audio-cnn-2.png)
 
+---
+
 ## Overview
-Audio CNN Visualizer is a full-stack application that allows users to upload audio files (WAV format), sends them to a deep learning backend for inference, and visualizes the model's predictions and feature maps in an interactive, modern web UI. The frontend is built with Next.js and the backend is served via a Python API (e.g., FastAPI, Modal, etc.).
+
+**Audio CNN Visualizer** is a full-stack application for audio classification and deep learning visualization. Users can upload WAV audio files, which are sent to a backend (Python, e.g., FastAPI) for inference using a Convolutional Neural Network (CNN). The frontend, built with Next.js and React, visualizes the model's predictions, feature maps, and audio waveforms in an interactive UI.
 
 ---
 
 ## Features
-- Drag-and-drop or file upload for audio files
-- Real-time visualization of model predictions with confidence scores and emojis
-- Interactive display of feature maps and audio waveforms
-- Responsive, modern UI with mobile and desktop support
-- Error handling and user feedback
-- Easy integration with any backend API endpoint
+- Upload and analyze WAV audio files
+- Real-time display of top predictions with confidence scores and emojis
+- Visualization of feature maps from CNN layers
+- Interactive waveform and spectrogram display
+- Responsive, modern UI (Next.js, Tailwind CSS)
+- Easy backend integration via environment variable
 
 ---
 
-## Theory: How CNNs Work for Audio Classification
+## Project Structure
+```
+audio-cnn-main/
+│
+├── audio-cnn-visualisation/      # Next.js frontend
+│   ├── src/
+│   │   ├── app/
+│   │   │   ├── layout.tsx
+│   │   │   └── page.tsx          # Main UI logic, file upload, API call, visualization
+│   │   ├── components/
+│   │   │   ├── FeatureMap.tsx    # Feature map visualization
+│   │   │   ├── Waveform.tsx      # Waveform visualization
+│   │   │   └── ...               # UI components
+│   │   └── lib/
+│   │       └── utils.ts          # Utility functions
+│   └── public/
+│       └── favicon.ico
+│
+├── main.py                       # Python backend entry (FastAPI, etc.)
+├── model.py                      # CNN model definition and loading
+├── requirements.txt              # Python dependencies
+├── chirpingbirds.wav             # Example audio file
+└── README.md
+```
+
+---
+
+## Theory: How the Machine Learning Works
 
 ### 1. **Audio Preprocessing**
-- **Raw audio** is first loaded and normalized.
-- The waveform is converted into a **spectrogram** (a 2D representation of frequency vs. time) using Short-Time Fourier Transform (STFT) or Mel-Frequency Cepstral Coefficients (MFCCs).
-- The spectrogram acts like an "image" input for the CNN.
+- The backend receives a WAV file, decodes it, and normalizes the waveform.
+- The waveform is converted to a **spectrogram** (time-frequency representation) using STFT or Mel-spectrogram.
+- The spectrogram is treated as an image and fed into the CNN.
 
-### 2. **Convolutional Neural Networks (CNNs) for Audio**
-- **Convolutional layers** slide learnable filters over the spectrogram to extract local patterns (e.g., frequency bands, temporal changes).
-- **Activation functions** (like ReLU) introduce non-linearity.
-- **Pooling layers** (e.g., max pooling) reduce dimensionality and help the network focus on the most important features.
-- **Deeper layers** learn more abstract representations (e.g., phonemes, timbre, rhythm).
+### 2. **Convolutional Neural Network (CNN) for Audio**
+- **Convolutional layers** scan the spectrogram with learnable filters, extracting local time-frequency patterns.
+- **Activation functions** (e.g., ReLU) introduce non-linearity.
+- **Pooling layers** reduce dimensionality and focus on salient features.
+- **Deeper layers** learn higher-level audio features (e.g., timbre, rhythm).
+- The final layers flatten the features and use fully connected layers for classification.
 
-### 3. **Feature Extraction and Classification**
-- The final layers of the CNN flatten the feature maps and pass them through one or more **fully connected (dense) layers**.
-- The output layer uses **softmax** (for multi-class) or **sigmoid** (for binary) activation to produce class probabilities.
-- The class with the highest probability is the predicted label.
+### 3. **Model Training (Typical Pipeline)**
+- **Dataset:** Commonly, datasets like ESC-50, UrbanSound8K, or custom audio datasets are used.
+- **Augmentation:** Techniques like noise addition, time-shifting, and pitch-shifting improve generalization.
+- **Loss Function:** Cross-entropy for classification.
+- **Optimization:** Adam or SGD optimizers are used to minimize loss.
+- **Validation:** Model performance is tracked on a held-out validation set.
 
-### 4. **Visualization**
-- **Feature maps** from intermediate CNN layers can be visualized to show what the network is "looking at" in the audio.
-- **Waveform and spectrogram** visualizations help users understand the input and the model's focus.
+### 4. **Inference and Visualization**
+- The backend returns:
+  - **Predictions:** Top classes and confidence scores
+  - **Feature maps:** Outputs from intermediate CNN layers
+  - **Input spectrogram and waveform**
+- The frontend visualizes:
+  - **Predictions** with emojis and confidence bars
+  - **Feature maps** as heatmaps
+  - **Waveform and spectrogram** for user insight
+
+### 5. **Model Interpretability & Explainability**
+- **Feature maps** help users see what the CNN is "looking at" in the audio.
+- **Saliency maps** or Grad-CAM (not implemented here, but possible) can highlight which parts of the spectrogram most influence the prediction.
+- **Interactive visualization** helps demystify deep learning for non-experts.
 
 ---
 
@@ -46,72 +90,18 @@ Audio CNN Visualizer is a full-stack application that allows users to upload aud
 
 ```mermaid
 graph TD;
-    User-->|Uploads WAV|Frontend(Next.js App)
-    Frontend-->|POST audio (base64 or file)|Backend(Python API)
-    Backend-->|Runs CNN inference|Model(CNN Model)
-    Model-->|Returns predictions, feature maps, waveform|Backend
-    Backend-->|JSON response|Frontend
-    Frontend-->|Visualizes results|User
+    User-->|Uploads WAV|Frontend(Next.js)
+    Frontend-->|POST audio|Backend(Python API)
+    Backend-->|CNN inference|Model
+    Model-->|Predictions, features|Backend
+    Backend-->|JSON|Frontend
+    Frontend-->|Visualization|User
 ```
-
-### How it Works
-1. **User uploads a WAV file** via the web interface.
-2. **Frontend** encodes the audio and sends it to the backend API endpoint (configurable via `NEXT_PUBLIC_API_URL`).
-3. **Backend** receives the audio, processes it, and runs it through a trained CNN model for audio classification.
-4. **Backend** returns a JSON response containing:
-    - Top predictions (class, confidence)
-    - Feature maps from CNN layers
-    - Input spectrogram and waveform data
-5. **Frontend** visualizes the predictions, feature maps, and waveform interactively for the user.
-
----
-
-## Tech Stack
-- **Frontend:** Next.js (React), TypeScript, Tailwind CSS, modern UI components
-- **Backend:** Python (FastAPI, Flask, or Modal), PyTorch/TensorFlow for CNN model
-- **Visualization:** Custom React components for feature maps, waveform, and color scales
-
----
-
-## Project Structure
-- `audio-cnn-visualisation/` — Next.js frontend
-- `main.py`, `model.py` — Python backend for inference
-- `chirpingbirds.wav` — Example audio file
-
----
-
-## Getting Started
-
-### Prerequisites
-- Node.js (for frontend)
-- Python 3.8+ (for backend)
-
-### Frontend Setup
-```bash
-cd audio-cnn-visualisation
-npm install
-# Add your backend URL to .env.local
-# Example:
-# NEXT_PUBLIC_API_URL=https://your-backend-url
-npm run dev
-```
-
-### Backend Setup
-```bash
-# (Example for FastAPI)
-pip install -r requirements.txt
-uvicorn main:app --reload
-```
-
----
-
-## Deployment
-- **Backend:** Deploy on Modal, Render, Heroku, or any cloud provider. Expose a POST endpoint for audio inference.
-- **Frontend:** Deploy on Vercel or Netlify. Set the `NEXT_PUBLIC_API_URL` environment variable in your frontend deployment to point to your backend.
 
 ---
 
 ## API Example
+
 **Request:**
 ```json
 POST / (or /predict)
@@ -134,7 +124,39 @@ POST / (or /predict)
 
 ---
 
+## Getting Started
+
+### Prerequisites
+- Node.js (for frontend)
+- Python 3.8+ (for backend)
+
+### Frontend Setup
+```bash
+cd audio-cnn-visualisation
+npm install
+# Add your backend URL to .env.local
+# Example:
+# NEXT_PUBLIC_API_URL=https://your-backend-url
+npm run dev
+```
+
+### Backend Setup
+```bash
+pip install -r requirements.txt
+uvicorn main:app --reload
+```
+
+---
+
+## Deployment
+
+- **Backend:** Deploy on Modal, Render, Heroku, or any cloud provider. Expose a POST endpoint for audio inference.
+- **Frontend:** Deploy on Vercel or Netlify. Set the `NEXT_PUBLIC_API_URL` environment variable in your frontend deployment to point to your backend.
+
+---
+
 ## Usage
+
 1. Open the frontend in your browser.
 2. Upload a WAV file.
 3. View predictions, feature maps, and waveform visualizations.
@@ -143,9 +165,12 @@ POST / (or /predict)
 ---
 
 ## Troubleshooting
+
 - **Build or Lint Errors:** Ensure your code matches the latest pushed version and all lint errors are fixed before deploying.
 - **API Errors:** Check that your backend is running and accessible from the frontend. Update `NEXT_PUBLIC_API_URL` as needed.
 - **Large Files:** Do not commit `venv/` or large model files to git. Use `.gitignore` and requirements.txt.
 
 ---
+
+
 
