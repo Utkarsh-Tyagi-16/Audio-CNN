@@ -1,10 +1,3 @@
-# Audio CNN Visualizer
-
-![Audio CNN 1](audio-cnn-1.png)
-![Audio CNN 2](audio-cnn-2.png)
-
----
-
 # 🎵 Audio CNN Visualizer & Classifier
 ### *Deep Learning-Powered Environmental Sound Classification with Real-Time CNN Layer Interpretability*
 
@@ -68,18 +61,18 @@ flowchart TD
     end
 
     AudioInput --> UI
-    UI -->|POST JSON { audio_data: base64 }| FastAPI
+    UI -->|"POST JSON (audio_data: base64)"| FastAPI
     FastAPI --> Base64Decoder
     Base64Decoder --> AudioDSP
     AudioDSP --> Resampler
     Resampler --> MelTransform
-    MelTransform -->|Tensor [1, 1, 128, T]| CNN
-    ModelWeights -.->|Load on Container Cold-Start| CNN
+    MelTransform -->|"Mel-Spectrogram Tensor"| CNN
+    ModelWeights -.->|"Load on Container Cold-Start"| CNN
     CNN --> HookEngine
-    CNN -->|Softmax Logits| PostProcessor
-    HookEngine -->|2D Channel-Averaged Activations| PostProcessor
-    AudioDSP -->|Downsampled 8000-pt Waveform| PostProcessor
-    PostProcessor -->|Structured JSON Response| UI
+    CNN -->|"Softmax Logits"| PostProcessor
+    HookEngine -->|"2D Channel-Averaged Activations"| PostProcessor
+    AudioDSP -->|"Downsampled 8000-pt Waveform"| PostProcessor
+    PostProcessor -->|"Structured JSON Response"| UI
 
     UI --> WaveformView
     UI --> SpectrogramView
@@ -102,7 +95,7 @@ sequenceDiagram
 
     User->>Frontend: Selects & uploads .wav file
     Frontend->>Frontend: Reads file as ArrayBuffer & encodes to Base64
-    Frontend->>ModalAPI: HTTP POST { audio_data: "<base64_wav>" }
+    Frontend->>ModalAPI: POST request with Base64 audio payload
     Note over ModalAPI: Spins up A10G worker (or reuses warm instance)
     ModalAPI->>DSP: Decode bytes via SoundFile & average stereo to mono
     DSP->>DSP: Resample to target rate & apply MelSpectrogram + dB transformation
@@ -367,4 +360,6 @@ The **Diverging SVG Color Map** visually reveals:
 
 ---
 
+## 🛡️ License
 
+This project is licensed under the **MIT License**. See the `LICENSE` file for details.
